@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+  qc:
+    build: ./qc
+    # Ideally run as non-root user for security 
+    # user: "1001:1001"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data
+    command: sh -c "mkdir -p /data/qc_output && fastqc ${FASTQ_FILE} -o /data/qc_output"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f ${QC_DIR}/subset_fastqc.html || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 256M
+
+  alignment:
+    build: ./alignment
+    # user: "1001:1001"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data
+    environment:
+      SAMPLE_NAME: ${SAMPLE_NAME}
+      FASTQ_FILE: ${FASTQ_FILE}
+      OUTPUT_DIR: ${OUTPUT_DIR}
+    depends_on:
+      - qc
+    healthcheck:
+      test: ["CMD-SHELL", "test -f ${OUTPUT_DIR}/${SAMPLE_NAME}/metrics.json || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 256M
+
+  report:
+    build: ./report
+    # user: "1001:1001"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data
+    environment:
+      SAMPLE_NAME: ${SAMPLE_NAME}
+      QC_DIR: ${QC_DIR}
+      ALIGN_DIR: ${ALIGN_DIR}
+      REPORT_DIR: ${REPORT_DIR}
+    depends_on:
+      - alignment
+    healthcheck:
+      test: ["CMD-SHELL", "test -f ${REPORT_DIR}/${SAMPLE_NAME}_report.html || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+          pids: 50
+        reservations:
+          cpus: '0.25'
+          memory: 128M
