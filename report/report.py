@@ -21,6 +21,9 @@ def get_config():
 
 
 def load_metrics(align_dir, sample):
+    """ 
+    Loads metrics.json for the sample from the alignment directory.
+    """
     path = os.path.join(align_dir, sample, "metrics.json")
     
     if not os.path.exists(path):
@@ -32,6 +35,9 @@ def load_metrics(align_dir, sample):
 
 
 def check_qc(qc_dir, sample):
+    """
+    Check for whether the QC HTML file exists for the sample.
+    """
     qc_file = "subset_fastqc.html"
     path = os.path.join(qc_dir, qc_file)
 
@@ -42,6 +48,9 @@ def check_qc(qc_dir, sample):
     return True
 
 def check_bam_files(align_dir, sample):
+    """
+    Checks whether BAM and BAI files exist for the sample. Used for improving project workflow. 
+    """
     base = os.path.join(align_dir, sample)
 
     bam_file = os.path.join(base, "Aligned.out.sorted.bam")
@@ -51,6 +60,9 @@ def check_bam_files(align_dir, sample):
 
 
 def build_metrics_table(metrics):
+    """
+    Formats existing metrics into HTML table.
+    """
     return f"""
     <table border="1" cellpadding="6">
         <tr><th>Metric</th><th>Value</th></tr>
@@ -63,6 +75,9 @@ def build_metrics_table(metrics):
 
 
 def build_html(sample, metrics, qc_ok, bam_ok, bai_ok):
+    """
+    Example of summary HTML report generated in the pipeline.
+    """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     table_html = build_metrics_table(metrics)
 
@@ -109,6 +124,9 @@ def build_html(sample, metrics, qc_ok, bam_ok, bai_ok):
     return html
 
 def save_report(report_dir, sample, html):
+    """
+    Saves the HTML report to the specified directory report_dir.
+    """
     os.makedirs(report_dir, exist_ok=True)
 
     output_path = os.path.join(report_dir, f"{sample}_report.html")
@@ -119,6 +137,9 @@ def save_report(report_dir, sample, html):
     print(f"[REPORT] saved → {output_path}")
 
 def save_metrics_json(report_dir, sample, metrics):
+    """
+    Saves sequencing metrics to a JSON file for database ingestion.
+    """
     output_path = os.path.join(
         report_dir,
         f"{sample}_metrics.json"
