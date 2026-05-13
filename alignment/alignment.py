@@ -18,12 +18,18 @@ def get_config():
     return sample, fastq_file, output_dir
 
 def prepare_output(output_dir, sample):
+    """
+    Output directory for the sample is created.
+    """
     path = os.path.join(output_dir, sample)
     os.makedirs(path, exist_ok=True)
     return path
 
-
 def run_alignment(sample, fastq_file):
+    """
+    Simulates an alignment step for a sequencing sample with metrics produced. In a real pipeline, this function would run an alignment tool
+    (e.g., Cell Ranger) on FASTQ files. 
+    """
     print(f"[ALIGN] Running sample: {sample}")
     print(f"[ALIGN] Input: {fastq_file}")
 
@@ -39,6 +45,10 @@ def run_alignment(sample, fastq_file):
 
 
 def save_results(out_path, metrics):
+    """
+    Saves alignment results to an output directory.
+    Creates two files: 'metrics.json' and 'run.log'
+    """
     metrics_path = os.path.join(out_path, "metrics.json")
     log_path = os.path.join(out_path, "run.log")
 
